@@ -68,15 +68,23 @@ const App = () => {
           const conditionData = locationData.weatherElement[0].time;  //Wx
           const MaxTimeData = locationData.weatherElement[1].time; // MaxT
           const MinTimeData = locationData.weatherElement[2].time; // MinT
-  
+
           let weekData = {};
+
+          console.log("------new------");
 
           conditionData.forEach(item => {
             const date = new Date(item.startTime);
-            const day = date.getDate();
-            weekData[day] = { ...weekData[day], condition: item.parameter.parameterName}
+            const day = date.getDate();  // 只有"日"，例如9/20就是"20"
+            weekData[day] = {
+              ...weekData[day],
+              condition: item.parameter.parameterName,
+              conditionValue: item.parameter.parameterValue
+            };
+            {/* 這邊的weekData是正確的 */}
+            // console.log("date (item.startTime): ");
+            // console.log(date);
           });
-          console.log(conditionData.parameter.parameterValue);
 
           MaxTimeData.forEach(item => {
             const date = new Date(item.startTime);
@@ -97,7 +105,13 @@ const App = () => {
 
           weekData = Object.keys(weekData).map(day => ({ day: day, ...weekData[day] }));
   
-          setWeekData(weekData);
+          // console.log("Object.keys(weekData): ");
+          // console.log(Object.keys(weekData));
+
+          setWeekData(weekData);  // 取到每天的資料都是startTime是當天(?)的第二筆
+
+          // console.log("weekData: ");
+          // console.log(weekData);
         }
       }
   
@@ -179,10 +193,13 @@ const App = () => {
     ]
   };
 
-  const today_month = (new Date().getMonth() + 1).toString();
-  const today_day = new Date().getDate().toString();
-
+  {/* 此處weekData是錯的 */}
   const todayData = weekData.find(day => day.condition);
+  // const todayData = weekData[0];
+  // console.log(weekData);
+
+  // console.log("todayData: ");
+  // console.log(todayData);
 
   /* 當天最高/最低溫 */
   const dailyHighs = weekData.map(day => day.high);
@@ -286,15 +303,59 @@ const App = () => {
   const sound = new Audio.Sound();
 
   useEffect(() => {
+    console.log("weekData[1]: ");
+    console.log(weekData[1]);
+
     // 當組件掛載時播放背景音樂
     const loadAndPlaySound = async () => {
-      try {
-        await sound.loadAsync(require('./assets/歡樂的夏日旅行.mp3')); // 替換成你的音檔路徑
-        await sound.setIsLoopingAsync(true); // 設置循環播放
-        await sound.playAsync();
-      } catch (error) {
-        console.log('Error loading sound:', error);
+      const playHappy = [1, 2, 3, 19, 24, 25, 26]  // 晴天: 輕鬆的爵士
+      const playPeaceful = [4, 5, 6, 7, 27, 28]  // 陰天: 咖啡廳
+      const playLittleSad = [8, 9, 10, 19]  // 小雨: 緩和的爵士
+      const playMidSad = [11, 12, 13, 14, 20, 23, 29, 30, 31, 32, 37, 38, 39]  // 有雨: 平和的爵士
+      const playVerySad = [15, 16, 17, 18, 21, 22, 33, 34, 35, 36, 40, 41]  // 大雨: 微悲傷的爵士
+
+      if (playHappy.includes(Number(weekData[1].conditionValue))) {
+        try {
+          await sound.loadAsync(require('./assets/輕鬆的爵士.mp3'));
+          await sound.setIsLoopingAsync(true); // 設置循環播放
+          await sound.playAsync();
+        } catch (error) {
+          console.log('Error loading sound:', error);
+        }
+      } else if (playPeaceful.includes(Number(weekData[1].conditionValue))) {
+        try {
+          await sound.loadAsync(require('./assets/咖啡廳.mp3'));
+          await sound.setIsLoopingAsync(true); // 設置循環播放
+          await sound.playAsync();
+        } catch (error) {
+          console.log('Error loading sound:', error);
+        }
+      } else if (playLittleSad.includes(Number(weekData[1].conditionValue))) {
+        try {
+          await sound.loadAsync(require('./assets/緩和的爵士.mp3'));
+          await sound.setIsLoopingAsync(true); // 設置循環播放
+          await sound.playAsync();
+        } catch (error) {
+          console.log('Error loading sound:', error);
+        }
+      } else if (playMidSad.includes(Number(weekData[1].conditionValue))) {
+        try {
+          await sound.loadAsync(require('./assets/平和的爵士.mp3'));
+          await sound.setIsLoopingAsync(true); // 設置循環播放
+          await sound.playAsync();
+        } catch (error) {
+          console.log('Error loading sound:', error);
+        }
+      } else if (playVerySad.includes(Number(weekData[1].conditionValue))) {
+        try {
+          await sound.loadAsync(require('./assets/微悲傷的爵士.mp3'));
+          await sound.setIsLoopingAsync(true); // 設置循環播放
+          await sound.playAsync();
+        } catch (error) {
+          console.log('Error loading sound:', error);
+        }
       }
+      
     };
 
     loadAndPlaySound();
@@ -303,12 +364,13 @@ const App = () => {
     return () => {
       sound.unloadAsync();
     };
-  }, []);
+  }, [city]);
 
   return (
     // ScrollView把整個return包起來超出畫面的部分才可以上下滑動查看
     <ScrollView contentContainerStyle={styles.scrollView}>
 
+      {/* 24節氣提示框 */}
       <View style={styles.centeredView}>
         <Modal
           animationType="slide"
@@ -468,7 +530,6 @@ const App = () => {
         <WeekdayTimePicker key={`${item.day}-${index}`} day={weekdays[index]} />
         ))} 
       </View> */}
-
 
     </ScrollView>
     
